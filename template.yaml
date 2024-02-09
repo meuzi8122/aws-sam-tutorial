@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: "2010-09-09" # 記載固定
+Transform: AWS::Serverless-2016-10-31 # 記載固定。CloudFormationがこのファイルをaws_sum用のテンプレートと認識。
+Description: fast-api を aws-sam で動かす
+
+Resources:
+  ApiHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: api/ # このテンプレートファイルが置かれている場所から見て、lambdaで実行するファイルが配置されているディレクトリ
+      Handler: handler.lambda_handler # 実行するファイル名.実行対象(今回はMangumインスタンスが格納された変数を指定)
+      Runtime: python3.10
+      Timeout: 20
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api # ApiGatewayにおける各APIの識別子？
+  Api:
+    Type: AWS::Serverless::HttpApi
+    
+Outputs:
+  ApiUrl:
+    Description: APIエンドポイント
+    Value:
+      Fn::Sub: "https://${Api}.execute-api.${AWS::Region}.${AWS::URLSuffix}/" # Fn::Subは文字列中に変数の値を展開する組み込み変数
